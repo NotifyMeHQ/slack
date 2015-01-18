@@ -27,13 +27,6 @@ class SlackGateway extends AbstractGateway implements GatewayInterface
     protected $endpoint = 'https://slack.com/api';
 
     /**
-     * Gateway display name.
-     *
-     * @var string
-     */
-    protected $displayName = 'slack';
-
-    /**
      * Create a new stack gateway instance.
      *
      * @param string[] $config
