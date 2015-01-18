@@ -12,6 +12,8 @@
 
 namespace NotifyMeHQ\Slack;
 
+use GuzzleHttp\Client;
+use NotifyMeHQ\NotifyMe\Arr;
 use NotifyMeHQ\NotifyMe\FactoryInterface;
 
 class SlackFactory implements FactoryInterface
@@ -25,6 +27,10 @@ class SlackFactory implements FactoryInterface
      */
     public function make(array $config)
     {
-        return new SlackGateway($config);
+        Arr::requires($config, ['token']);
+
+        $client = new Client();
+
+        return new SlackGateway($client, $config);
     }
 }
