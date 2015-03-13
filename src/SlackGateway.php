@@ -69,7 +69,7 @@ class SlackGateway implements GatewayInterface
     public function notify($to, $message, array $options = [])
     {
         $options['to'] = $to;
-        
+
         $params['unfurl_links'] = true;
 
         $params = $this->addMessage($message, $params, $options);
