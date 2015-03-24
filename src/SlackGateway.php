@@ -44,7 +44,7 @@ class SlackGateway implements GatewayInterface
     protected $config;
 
     /**
-     * Create a new stack gateway instance.
+     * Create a new slack gateway instance.
      *
      * @param \GuzzleHttp\Client $client
      * @param string[]           $config
