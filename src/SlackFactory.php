@@ -13,7 +13,7 @@ namespace NotifyMeHQ\Slack;
 
 use GuzzleHttp\Client;
 use NotifyMeHQ\NotifyMe\Arr;
-use NotifyMeHQ\NotifyMe\FactoryInterface;
+use NotifyMeHQ\Contracts\FactoryInterface;
 
 class SlackFactory implements FactoryInterface
 {
