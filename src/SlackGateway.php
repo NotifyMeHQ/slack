@@ -22,25 +22,11 @@ class SlackGateway implements GatewayInterface
     use HttpGatewayTrait;
 
     /**
-     * Gateway api endpoint.
+     * The api endpoint.
      *
      * @var string
      */
     protected $endpoint = 'https://slack.com/api';
-
-    /**
-     * The http client.
-     *
-     * @var \GuzzleHttp\Client
-     */
-    protected $client;
-
-    /**
-     * Configuration options.
-     *
-     * @var string[]
-     */
-    protected $config;
 
     /**
      * Create a new slack gateway instance.
@@ -59,40 +45,22 @@ class SlackGateway implements GatewayInterface
     /**
      * Send a notification.
      *
-     * @param string   $to
-     * @param string   $message
-     * @param string[] $options
+     * @param string $to
+     * @param string $message
      *
      * @return \NotifyMeHQ\Contracts\ResponseInterface
      */
-    public function notify($to, $message, array $options = [])
+    public function notify($to, $message)
     {
-        $options['to'] = $to;
+        $params = [
+            'unfurl_links' => true,
+            'token'        => $this->config['token'],
+            'username'     => $this->config['from'],
+            'channel'      => $to,
+            'text'         => $this->formatMessage($message),
+        ];
 
-        $params['unfurl_links'] = true;
-
-        $params = $this->addMessage($message, $params, $options);
-
-        return $this->commit('post', $this->buildUrlFromString('chat.postMessage'), $params);
-    }
-
-    /**
-     * Add a message to the request.
-     *
-     * @param string   $message
-     * @param string[] $params
-     * @param string[] $options
-     *
-     * @return array
-     */
-    protected function addMessage($message, array $params, array $options)
-    {
-        $params['token'] = Arr::get($options, 'token', $this->config['token']);
-        $params['username'] = Arr::get($options, 'from', $this->config['from']);
-        $params['channel'] = Arr::get($options, 'to', '');
-        $params['text'] = $this->formatMessage($message);
-
-        return $params;
+        return $this->send($this->buildUrlFromString('chat.postMessage'), $params);
     }
 
     /**
@@ -112,28 +80,29 @@ class SlackGateway implements GatewayInterface
     }
 
     /**
-     * Commit a HTTP request.
+     * Send the notification over the wire.
      *
-     * @param string   $method
      * @param string   $url
      * @param string[] $params
-     * @param string[] $options
      *
-     * @return mixed
+     * @return \NotifyMeHQ\Contracts\ResponseInterface
      */
-    protected function commit($method = 'post', $url, array $params = [], array $options = [])
+    protected function send($url, array $params)
     {
         $success = false;
 
-        $rawResponse = $this->client->{$method}($url, [
+        $rawResponse = $this->client->post($url, [
             'exceptions'      => false,
             'timeout'         => '80',
             'connect_timeout' => '30',
-            'body'            => $params,
+            'headers'         => [
+                'Accept' => 'application/json',
+            ],
+            'body' => $params,
         ]);
 
         if ($rawResponse->getStatusCode() == 200) {
-            $response = $this->parseResponse($rawResponse->getBody());
+            $response = $rawResponse->json();
             $success = $response['ok'];
         } else {
             $response = $this->responseError($rawResponse);
@@ -143,7 +112,7 @@ class SlackGateway implements GatewayInterface
     }
 
     /**
-     * Map HTTP response to response object.
+     * Map the raw response to our response object.
      *
      * @param bool  $success
      * @param array $response
@@ -161,7 +130,7 @@ class SlackGateway implements GatewayInterface
     /**
      * Get the default json response.
      *
-     * @param string $rawResponse
+     * @param \GuzzleHttp\Message\ResponseInterface $rawResponse
      *
      * @return array
      */
