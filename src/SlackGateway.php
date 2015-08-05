@@ -55,6 +55,7 @@ class SlackGateway implements GatewayInterface
             'unfurl_links' => true,
             'token'        => $this->config['token'],
             'username'     => $this->config['from'],
+            'as_user'      => $this->config['as_user'],
             'channel'      => $to,
             'text'         => $this->formatMessage($message),
         ];
